@@ -1,37 +1,35 @@
 package com.sbu.redistrictingserver.controller;
 
-import com.sbu.redistrictingserver.handler.JobHandler;
 import com.sbu.redistrictingserver.model.Job;
 import com.sbu.redistrictingserver.repository.JobRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.File;
-import java.io.FileInputStream;
+
+
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.List;
 
-@RestController()
+@RestController
+@RequestMapping(path="/")
 public class JobController {
-
     @Autowired
-    JobHandler jobHandler = new JobHandler();
+    private JobRepository jobrepo;
 
-    @PostMapping("/job")
-    public ResponseEntity createJob(@RequestBody Job newJob) throws IOException {
-        System.out.println("Receive job " + newJob.toString());
-        jobHandler.createJob(newJob);
+    @PostMapping(path="/job")
+    public ResponseEntity createJob(@RequestBody String newJob) throws IOException {
+        System.out.println("Receive job " + newJob);
+//        Gson g = new Gson();
+//        jobrepo.save(newJob);
         return new ResponseEntity(HttpStatus.CREATED);
     }
 
-    @GetMapping("/job/{id}")
+    @GetMapping(path="/job/{id}")
     public ResponseEntity getJob(@PathVariable Long id) {
-//        Job job = jobHandler.getJob(id);
-//        return new ResponseEntity(job, HttpStatus.OK);
-        return new ResponseEntity(HttpStatus.OK);
+        Job job = jobrepo.findById(id).get();
+        System.out.println("Find job " + job.toString());
+        return new ResponseEntity(job.toString(), HttpStatus.OK);
     }
 }
