@@ -15,7 +15,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
-@CrossOrigin(origins="http://localhost:4000")
 @RestController()
 public class JobController {
 
@@ -31,7 +30,8 @@ public class JobController {
 
     @GetMapping("/job/{id}")
     public ResponseEntity getJob(@PathVariable Long id) {
-        Job job = jobHandler.getJob(id);
-        return new ResponseEntity(job, HttpStatus.OK);
+//        Job job = jobHandler.getJob(id);
+//        return new ResponseEntity(job, HttpStatus.OK);
+        return new ResponseEntity(HttpStatus.OK);
     }
 }
