@@ -1,10 +1,6 @@
 package com.sbu.redistrictingserver.model;
 
 import javax.persistence.*;
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,8 +16,17 @@ public class Job {
 
     private int slurmID;
 
+    private String districtPlanPath;
+
+    @Transient
+    private ArrayList<DistrictPlan> districtPlans;
+
+    public void loadDistrictPlans() {
+
+    }
+
     @Override
     public String toString() {
-        return "Job ID: " + this.id + " " + state + " " + compactness_limit + " " + slurmID;
+        return "Job ID: " + this.id + " " + state + " " + compactness_limit + " " + slurmID + " " + districtPlanPath;
     }
 }
