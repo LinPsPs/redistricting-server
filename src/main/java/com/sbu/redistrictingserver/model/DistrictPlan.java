@@ -12,33 +12,23 @@ import java.util.ArrayList;
 
 public class DistrictPlan {
 
-    private String state;
-    private ArrayList<District> districts;
+    public String state;
+    public ArrayList<District> districts;
 
-    public DistrictPlan(String state, String path) {
-        this.state = state;
+    public DistrictPlan(JsonElement districtsJson) {
         this.districts = new ArrayList<>();
-        try {
-            JsonObject jobj = new Gson().fromJson(new FileReader(path), JsonObject.class);
-            JsonArray arr = jobj.getAsJsonArray("plans");
-            for(JsonElement districtsJson: arr) {
-                JsonArray districtArray = districtsJson.getAsJsonObject().getAsJsonArray("districts");
-                for(JsonElement district: districtArray) {
-                    JsonObject districtObject = district.getAsJsonObject();
-                    JsonArray precinctArray = districtObject.getAsJsonArray("precincts");
-                    ArrayList<Integer> precincts = new ArrayList<>();
-                    if (precinctArray != null) {
-                        for (int i=0;i<precinctArray.size();i++){
-                            precincts.add(precinctArray.get(i).getAsInt());
-                        }
-                    }
-                    districts.add(new District(districtObject.get("districtNumber").getAsInt(), districtObject.get("HVAP").getAsInt(),
-                            districtObject.get("WVAP").getAsInt(), districtObject.get("BVAP").getAsInt(), precincts));
+        JsonArray districtArray = districtsJson.getAsJsonObject().getAsJsonArray("districts");
+        for(JsonElement district: districtArray) {
+            JsonObject districtObject = district.getAsJsonObject();
+            JsonArray precinctArray = districtObject.getAsJsonArray("precincts");
+            ArrayList<Integer> precincts = new ArrayList<>();
+            if (precinctArray != null) {
+                for (int i=0;i<precinctArray.size();i++){
+                    precincts.add(precinctArray.get(i).getAsInt());
                 }
             }
-        }
-        catch(Exception e) {
-            System.out.println("Error " + e);
+            districts.add(new District(districtObject.get("districtNumber").getAsInt(), districtObject.get("hvap").getAsInt(),
+                    districtObject.get("wvap").getAsInt(), districtObject.get("bvap").getAsInt(), precincts));
         }
     }
 }

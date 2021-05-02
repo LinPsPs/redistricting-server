@@ -5,11 +5,11 @@ import java.util.ArrayList;
 
 public class District {
 
-    private int districtNum;
-    private int HVAP;
-    private int WVAP;
-    private int BVAP;
-    private ArrayList<Integer> precincts;
+    public int districtNum;
+    public int HVAP;
+    public int WVAP;
+    public int BVAP;
+    public ArrayList<Integer> precincts;
 
     public District(int districtNum, int HVAP, int WVAP, int BVAP, ArrayList<Integer> precincts) {
         this.districtNum = districtNum;

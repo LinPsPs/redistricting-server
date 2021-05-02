@@ -15,7 +15,6 @@ public class RedistrictingServerApplication {
 	public static void main(String[] args) {
 		SpringApplication.run(RedistrictingServerApplication.class, args);
 		System.out.println("Hello from Server");
-		new DistrictPlan("GA", "src/main/resources/Districts/GA/Georgia-50.json");
 	}
 
 }

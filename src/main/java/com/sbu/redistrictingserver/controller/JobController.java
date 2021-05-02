@@ -35,4 +35,11 @@ public class JobController {
         System.out.println("Find job " + gson.toJson(job, Job.class));
         return new ResponseEntity(gson.toJson(job, Job.class), HttpStatus.OK);
     }
+
+    @GetMapping(path="/job/getPlot/{state}")
+    public ResponseEntity getPlot(@PathVariable String state) {
+        Job job = new Job();
+        job.loadPlans("src/main/resources/Districts/MD/MA_5000_2.json");
+        return new ResponseEntity(job.getBoxandWhiskerPlot("BVAP"), HttpStatus.OK);
+    }
 }
