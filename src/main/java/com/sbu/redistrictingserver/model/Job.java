@@ -1,12 +1,9 @@
 package com.sbu.redistrictingserver.model;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
+import com.sbu.redistrictingserver.controller.JobController;
 
 import javax.persistence.*;
-import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -32,12 +29,14 @@ public class Job {
     @Transient
     private final ArrayList<District> enacted;
 
+    @Transient
+    private final ArrayList<District> filtered;
+
     public Job(String state) {
         this.state = state;
-        this.districtPlans = new ArrayList<>();
-        this.enacted = new ArrayList<>();
-        this.loadEnactedPlans();
-        this.loadPlans();
+        this.districtPlans = JobController.districtPlans.get(state);
+        this.enacted = JobController.enacted.get(state);
+        this.filtered = new ArrayList<>();
         this.calDev();
     }
 
@@ -48,47 +47,6 @@ public class Job {
 
     public void run() {
 
-    }
-
-    public void loadEnactedPlans() {
-        String path = "src/main/resources/Districts/" + this.state + "/" + this.state + "_enacted.json";
-        try {
-            JsonObject jobj = new Gson().fromJson(new FileReader(path), JsonObject.class);
-            JsonArray arr = jobj.getAsJsonArray();
-            int cur = 0;
-            for(JsonElement districtJson: arr) {
-                JsonObject districtObject = districtJson.getAsJsonObject();
-                JsonArray precinctArray = districtObject.getAsJsonArray("precincts");
-                ArrayList<Integer> precincts = new ArrayList<>();
-                if (precinctArray != null) {
-                    for (int i=0;i<precinctArray.size();i++){
-                        precincts.add(precinctArray.get(i).getAsInt());
-                    }
-                }
-                this.enacted.add(new District(cur, districtObject.get("vap").getAsInt(), districtObject.get("hvap").getAsInt(),
-                        districtObject.get("wvap").getAsInt(), districtObject.get("bvap").getAsInt(), districtObject.get("asianvap").getAsInt(), precincts));
-                cur ++;
-            }
-        }
-        catch(Exception e) {
-            System.out.println("Error " + e);
-        }
-    }
-
-    public void loadPlans() {
-        String path = "src/main/resources/Districts/" + this.state + "/" + this.state + "_plans.json";
-        try {
-            JsonObject jobj = new Gson().fromJson(new FileReader(path), JsonObject.class);
-            JsonArray arr = jobj.getAsJsonArray("plans");
-            for(JsonElement districtsJson: arr) {
-                DistrictPlan plan = new DistrictPlan(districtsJson);
-                districtPlans.add(plan);
-            }
-            System.out.println("Found " + districtPlans.size() + " plans...");
-        }
-        catch(Exception e) {
-            System.out.println("Error " + e);
-        }
     }
 
     public void calDev() {

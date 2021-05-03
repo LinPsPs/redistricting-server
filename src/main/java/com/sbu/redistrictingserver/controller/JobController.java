@@ -1,6 +1,11 @@
 package com.sbu.redistrictingserver.controller;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.sbu.redistrictingserver.model.District;
+import com.sbu.redistrictingserver.model.DistrictPlan;
 import com.sbu.redistrictingserver.model.Job;
 import com.sbu.redistrictingserver.repository.JobRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,8 +15,11 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 
-
+import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+
 
 @RestController
 @RequestMapping(path="/")
@@ -19,6 +27,8 @@ public class JobController {
     @Autowired
     private JobRepository jobrepo;
     private final Gson gson = new Gson();
+    public static HashMap<String, ArrayList<DistrictPlan>> districtPlans = new HashMap<>();
+    public static HashMap<String, ArrayList<District>> enacted = new HashMap<>();
 
     @PostMapping(path="/job")
     public ResponseEntity createJob(@RequestBody String jobJson) throws IOException {
@@ -40,5 +50,50 @@ public class JobController {
     public ResponseEntity getPlot(@PathVariable String state) {
         Job job = new Job(state);
         return new ResponseEntity(job.getBoxandWhiskerPlot("BVAP"), HttpStatus.OK);
+    }
+
+    public static void loadEnactedPlans(String state) {
+        String path = "src/main/resources/Districts/" + state + "/" + state + "_enacted.json";
+        ArrayList<District> enacted_districts = new ArrayList<>();
+        try {
+            JsonObject jobj = new Gson().fromJson(new FileReader(path), JsonObject.class);
+            int cur = 0;
+            for(String key: jobj.keySet()) {
+                JsonObject districtObject = jobj.get(key).getAsJsonObject();
+                JsonArray precinctArray = districtObject.getAsJsonArray("precincts");
+                ArrayList<Integer> precincts = new ArrayList<>();
+                if (precinctArray != null) {
+                    for (int i=0;i<precinctArray.size();i++){
+                        precincts.add(precinctArray.get(i).getAsInt());
+                    }
+                }
+                enacted_districts.add(new District(cur, districtObject.get("vap").getAsInt(), districtObject.get("hvap").getAsInt(),
+                        districtObject.get("wvap").getAsInt(), districtObject.get("bvap").getAsInt(), districtObject.get("asainvap").getAsInt(), precincts));
+                cur ++;
+            }
+            System.out.println(enacted_districts.size() + " districts loaded from enacted plan");
+            enacted.put(state, enacted_districts);
+        }
+        catch(Exception e) {
+            System.out.println("Error " + e);
+        }
+    }
+
+    public static void loadPlans(String state) {
+        String path = "src/main/resources/Districts/" + state + "/" + state + "_plans.json";
+        ArrayList<DistrictPlan> district_plans = new ArrayList<>();
+        try {
+            JsonObject jobj = new Gson().fromJson(new FileReader(path), JsonObject.class);
+            JsonObject arr = jobj.getAsJsonObject("plans");
+            for(String key: arr.keySet()) {
+                DistrictPlan plan = new DistrictPlan(arr.get(key));
+                district_plans.add(plan);
+            }
+            System.out.println("Found " + district_plans.size() + " plans...");
+            districtPlans.put(state, district_plans);
+        }
+        catch(Exception e) {
+            System.out.println("Error " + e);
+        }
     }
 }
