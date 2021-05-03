@@ -38,8 +38,7 @@ public class JobController {
 
     @GetMapping(path="/job/getPlot/{state}")
     public ResponseEntity getPlot(@PathVariable String state) {
-        Job job = new Job();
-        job.loadPlans("src/main/resources/Districts/MD/MA_5000_2.json");
+        Job job = new Job(state);
         return new ResponseEntity(job.getBoxandWhiskerPlot("BVAP"), HttpStatus.OK);
     }
 }

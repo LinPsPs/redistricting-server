@@ -29,8 +29,16 @@ public class Job {
     @Transient
     private final ArrayList<DistrictPlan> districtPlans;
 
-    public Job() {
+    @Transient
+    private final ArrayList<District> enacted;
+
+    public Job(String state) {
+        this.state = state;
         this.districtPlans = new ArrayList<>();
+        this.enacted = new ArrayList<>();
+        this.loadEnactedPlans();
+        this.loadPlans();
+        this.calDev();
     }
 
     @Override
@@ -42,8 +50,33 @@ public class Job {
 
     }
 
-    public void loadPlans(String path) {
-//        DistrictPlan p = new DistrictPlan("src/main/resources/Districts/GA/ga-demo.json");
+    public void loadEnactedPlans() {
+        String path = "src/main/resources/Districts/" + this.state + "/" + this.state + "_enacted.json";
+        try {
+            JsonObject jobj = new Gson().fromJson(new FileReader(path), JsonObject.class);
+            JsonArray arr = jobj.getAsJsonArray();
+            int cur = 0;
+            for(JsonElement districtJson: arr) {
+                JsonObject districtObject = districtJson.getAsJsonObject();
+                JsonArray precinctArray = districtObject.getAsJsonArray("precincts");
+                ArrayList<Integer> precincts = new ArrayList<>();
+                if (precinctArray != null) {
+                    for (int i=0;i<precinctArray.size();i++){
+                        precincts.add(precinctArray.get(i).getAsInt());
+                    }
+                }
+                this.enacted.add(new District(cur, districtObject.get("vap").getAsInt(), districtObject.get("hvap").getAsInt(),
+                        districtObject.get("wvap").getAsInt(), districtObject.get("bvap").getAsInt(), districtObject.get("asianvap").getAsInt(), precincts));
+                cur ++;
+            }
+        }
+        catch(Exception e) {
+            System.out.println("Error " + e);
+        }
+    }
+
+    public void loadPlans() {
+        String path = "src/main/resources/Districts/" + this.state + "/" + this.state + "_plans.json";
         try {
             JsonObject jobj = new Gson().fromJson(new FileReader(path), JsonObject.class);
             JsonArray arr = jobj.getAsJsonArray("plans");
@@ -55,6 +88,12 @@ public class Job {
         }
         catch(Exception e) {
             System.out.println("Error " + e);
+        }
+    }
+
+    public void calDev() {
+        for(DistrictPlan plan: this.districtPlans) {
+            plan.calDeviation(this.enacted);
         }
     }
 
