@@ -52,6 +52,17 @@ public class JobController {
         return new ResponseEntity(job.getBoxandWhiskerPlot("BVAP"), HttpStatus.OK);
     }
 
+    @PostMapping(path="/job/{id}/filter")
+    public ResponseEntity filter(@PathVariable Long id, @RequestBody String constraints) {
+        JsonObject cons = gson.fromJson(constraints, JsonObject.class);
+        int dev = cons.get("dev").getAsInt();
+        String MM = "BVAP";
+        int MM_limit = 3;
+//        Job job = jobrepo.findById(id).get();
+        Job job = new Job("MD");
+        return new ResponseEntity(job.filtered(cons), HttpStatus.OK);
+    }
+
     public static void loadEnactedPlans(String state) {
         String path = "src/main/resources/Districts/" + state + "/" + state + "_enacted.json";
         ArrayList<District> enacted_districts = new ArrayList<>();
@@ -80,13 +91,14 @@ public class JobController {
     }
 
     public static void loadPlans(String state) {
-        String path = "src/main/resources/Districts/" + state + "/" + state + "_plans.json";
+         String path = "src/main/resources/Districts/" + state + "/" + state + "_plans.json";
+//        String path = "src/main/resources/Districts/GA/Georgia-50.json";
         ArrayList<DistrictPlan> district_plans = new ArrayList<>();
         try {
             JsonObject jobj = new Gson().fromJson(new FileReader(path), JsonObject.class);
-            JsonObject arr = jobj.getAsJsonObject("plans");
-            for(String key: arr.keySet()) {
-                DistrictPlan plan = new DistrictPlan(arr.get(key));
+            JsonArray arr = jobj.getAsJsonObject().getAsJsonArray("plans");
+            for(JsonElement element: arr) {
+                DistrictPlan plan = new DistrictPlan(element);
                 district_plans.add(plan);
             }
             System.out.println("Found " + district_plans.size() + " plans...");

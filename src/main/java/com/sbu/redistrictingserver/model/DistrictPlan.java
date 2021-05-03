@@ -9,17 +9,21 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.Reader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 
 public class DistrictPlan {
 
     public String state;
     public ArrayList<District> districts;
+    public HashMap<District.MM, Integer> mm;
     public double popdiff;
     public double deviation;
 
     public DistrictPlan(JsonElement districtsJson) {
         this.districts = new ArrayList<>();
+        this.mm = new HashMap<>();
         ArrayList<Integer> vap = new ArrayList<>();
         JsonArray districtArray = districtsJson.getAsJsonObject().getAsJsonArray("districts");
         for(JsonElement district: districtArray) {
@@ -40,6 +44,21 @@ public class DistrictPlan {
             sum += pop;
         }
         this.popdiff = (Collections.max(vap) - Collections.min(vap)) / (1.0 * sum / vap.size());
+        findMM();
+    }
+
+    public void findMM() {
+        int count = 0;
+        for(District d: this.districts) {
+            if (d.mm == District.MM.BVAP) {
+                if(!this.mm.containsKey(District.MM.BVAP)) {
+                    this.mm.put(District.MM.BVAP, 0);
+                }
+                else {
+                    this.mm.put(District.MM.BVAP, this.mm.get(District.MM.BVAP));
+                }
+            }
+        }
     }
 
     public void calDeviation(ArrayList<District> enacted) {
@@ -47,6 +66,6 @@ public class DistrictPlan {
         for(int i = 0; i < enacted.size(); i++) {
             diff += Math.pow(enacted.get(i).VAP - districts.get(i).VAP, 2);
         }
-        this.deviation = diff / enacted.size();
+        this.deviation = Math.pow(diff / enacted.size(), 0.5);
     }
 }

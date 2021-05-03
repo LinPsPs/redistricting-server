@@ -1,6 +1,7 @@
 package com.sbu.redistrictingserver.model;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.sbu.redistrictingserver.controller.JobController;
 
 import javax.persistence.*;
@@ -30,7 +31,11 @@ public class Job {
     private final ArrayList<District> enacted;
 
     @Transient
-    private final ArrayList<District> filtered;
+    private ArrayList<DistrictPlan> filtered;
+
+    public Job() {
+        this("MD");
+    }
 
     public Job(String state) {
         this.state = state;
@@ -47,6 +52,24 @@ public class Job {
 
     public void run() {
 
+    }
+
+    public int filtered(JsonObject cons) {
+        this.filtered = new ArrayList<>();
+        for(DistrictPlan plan : this.districtPlans) {
+            // get Majority minority type
+            District.MM type;
+            if(cons.get("MM_Type").getAsString().equals("BVAP")) {
+                type = District.MM.BVAP;
+            }
+            else {
+                type = District.MM.AVAP;
+            }
+            if(plan.deviation < cons.get("dev").getAsInt() && plan.mm.get(type) < cons.get("MM_Limit").getAsInt()) {
+                this.filtered.add(plan);
+            }
+        }
+        return this.filtered.size();
     }
 
     public void calDev() {
