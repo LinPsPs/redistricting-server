@@ -5,13 +5,12 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.sbu.redistrictingserver.model.District;
-import com.sbu.redistrictingserver.model.DistrictPlan;
+import com.sbu.redistrictingserver.model.DistrictingPlan;
 import com.sbu.redistrictingserver.model.Job;
 import com.sbu.redistrictingserver.repository.JobRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -27,7 +26,7 @@ public class JobController {
     @Autowired
     private JobRepository jobrepo;
     private final Gson gson = new Gson();
-    public static HashMap<String, ArrayList<DistrictPlan>> districtPlans = new HashMap<>();
+    public static HashMap<String, ArrayList<DistrictingPlan>> districtPlans = new HashMap<>();
     public static HashMap<String, ArrayList<District>> enacted = new HashMap<>();
 
     @PostMapping(path="/job")
@@ -93,12 +92,12 @@ public class JobController {
     public static void loadPlans(String state) {
          String path = "src/main/resources/Districts/" + state + "/" + state + "_plans.json";
 //        String path = "src/main/resources/Districts/GA/Georgia-50.json";
-        ArrayList<DistrictPlan> district_plans = new ArrayList<>();
+        ArrayList<DistrictingPlan> district_plans = new ArrayList<>();
         try {
             JsonObject jobj = new Gson().fromJson(new FileReader(path), JsonObject.class);
             JsonArray arr = jobj.getAsJsonObject().getAsJsonArray("plans");
             for(JsonElement element: arr) {
-                DistrictPlan plan = new DistrictPlan(element);
+                DistrictingPlan plan = new DistrictingPlan(element);
                 district_plans.add(plan);
             }
             System.out.println("Found " + district_plans.size() + " plans...");

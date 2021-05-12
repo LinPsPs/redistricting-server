@@ -13,18 +13,25 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 
-public class DistrictPlan {
+public class DistrictingPlan {
 
     public String state;
     public ArrayList<District> districts;
     public HashMap<District.MM, Integer> mm;
-    public double popdiff;
-    public double deviation;
+    public double totalVap;
+    public double popEqual;
+    public double devFromAverage;
+    public double devFromEnacted;
+    public double areaDeviation;
+    public double gc;
+    public double objectiveFxnScore;
 
-    public DistrictPlan(JsonElement districtsJson) {
+    public DistrictingPlan(JsonElement districtsJson) {
         this.districts = new ArrayList<>();
         this.mm = new HashMap<>();
         ArrayList<Integer> vap = new ArrayList<>();
+        this.areaDeviation = districtsJson.getAsJsonObject().get("areadevs").getAsDouble();
+        this.gc = districtsJson.getAsJsonObject().get("gc").getAsDouble();
         JsonArray districtArray = districtsJson.getAsJsonObject().getAsJsonArray("districts");
         for(JsonElement district: districtArray) {
             JsonObject districtObject = district.getAsJsonObject();
@@ -39,11 +46,10 @@ public class DistrictPlan {
                     districtObject.get("wvap").getAsInt(), districtObject.get("bvap").getAsInt(), districtObject.get("asianvap").getAsInt(), precincts));
             vap.add(districtObject.get("vap").getAsInt());
         }
-        long sum = 0;
         for(int pop: vap) {
-            sum += pop;
+            this.totalVap += pop;
         }
-        this.popdiff = (Collections.max(vap) - Collections.min(vap)) / (1.0 * sum / vap.size());
+        calEqualPopulation();
         findMM();
     }
 
@@ -61,11 +67,39 @@ public class DistrictPlan {
         }
     }
 
-    public void calDeviation(ArrayList<District> enacted) {
+    public void calEqualPopulation() {
+        double ideaPop = (int) (this.totalVap / this.districts.size());
+        double popVar = 0;
+        for(District d: this.districts) {
+            popVar += Math.pow((int) (d.VAP / ideaPop) - 1, 2);
+        }
+        this.popEqual = Math.pow(popVar, 0.5);
+    }
+
+    public void calDevFromEnacted(ArrayList<District> enacted) {
         double diff = 0;
         for(int i = 0; i < enacted.size(); i++) {
             diff += Math.pow(enacted.get(i).VAP - districts.get(i).VAP, 2);
         }
-        this.deviation = Math.pow(diff / enacted.size(), 0.5);
+        this.devFromEnacted = Math.pow(diff / enacted.size(), 0.5);
+    }
+
+    public void calDevFromAverage(ArrayList<District> ave) {
+        double diff = 0;
+        for(int i = 0; i < ave.size(); i++) {
+            diff += Math.pow(ave.get(i).VAP - districts.get(i).VAP, 2);
+        }
+        this.devFromAverage = Math.pow(diff / ave.size(), 0.5);
+    }
+
+    /**
+     * Json popEq; devFromAve; devFromEnacted; gc
+     */
+    public void getObjectiveFxnScore(JsonElement weight) {
+        double popEqW = weight.getAsJsonObject().get("popEq").getAsDouble();
+        double devFromAveW = weight.getAsJsonObject().get("devFromAve").getAsDouble();
+        double devFromEnactedW = weight.getAsJsonObject().get("devFromEnacted").getAsDouble();
+        double gcW = weight.getAsJsonObject().get("gc").getAsDouble();
+        this.objectiveFxnScore = popEqW * this.popEqual + devFromEnactedW * this.devFromEnacted + devFromAveW * this.devFromAverage + gcW * this.gc;
     }
 }

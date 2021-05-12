@@ -5,10 +5,8 @@ import com.google.gson.JsonObject;
 import com.sbu.redistrictingserver.controller.JobController;
 
 import javax.persistence.*;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
+import java.lang.reflect.Array;
+import java.util.*;
 
 @Entity
 
@@ -25,13 +23,16 @@ public class Job {
     private String districtPlanPath;
 
     @Transient
-    private final ArrayList<DistrictPlan> districtPlans;
+    private final ArrayList<DistrictingPlan> districtingPlans;
 
     @Transient
     private final ArrayList<District> enacted;
 
     @Transient
-    private ArrayList<DistrictPlan> filtered;
+    ArrayList<District> average;
+
+    @Transient
+    private ArrayList<DistrictingPlan> filtered;
 
     public Job() {
         this("MD");
@@ -39,10 +40,11 @@ public class Job {
 
     public Job(String state) {
         this.state = state;
-        this.districtPlans = JobController.districtPlans.get(state);
+        this.districtingPlans = JobController.districtPlans.get(state);
         this.enacted = JobController.enacted.get(state);
         this.filtered = new ArrayList<>();
-        this.calDev();
+        this.calDevFromEnacted();
+        this.calDevFromAverage();
     }
 
     @Override
@@ -56,7 +58,7 @@ public class Job {
 
     public int filtered(JsonObject cons) {
         this.filtered = new ArrayList<>();
-        for(DistrictPlan plan : this.districtPlans) {
+        for(DistrictingPlan plan : this.districtingPlans) {
             // get Majority minority type
             District.MM type;
             if(cons.get("MM_Type").getAsString().equals("BVAP")) {
@@ -65,28 +67,47 @@ public class Job {
             else {
                 type = District.MM.AVAP;
             }
-            if(plan.deviation < cons.get("dev").getAsInt() && plan.mm.get(type) < cons.get("MM_Limit").getAsInt()) {
+            if(plan.popEqual < cons.get("dev").getAsInt() &&
+                    plan.gc < cons.get("gc").getAsDouble() &&
+                    plan.mm.get(type) < cons.get("MM_Limit").getAsInt()) {
                 this.filtered.add(plan);
             }
         }
         return this.filtered.size();
     }
 
-    public void calDev() {
-        for(DistrictPlan plan: this.districtPlans) {
-            plan.calDeviation(this.enacted);
+    public ArrayList<DistrictingPlan> getTop10() {
+        ArrayList<DistrictingPlan> top10 = new ArrayList<>();
+        Collections.sort(this.districtingPlans, Comparator.comparingDouble(o -> o.objectiveFxnScore));
+        for(int i = 0; i < 10; i++) {
+            top10.add(this.districtingPlans.get(i));
+        }
+        return top10;
+    }
+
+    public void calDevFromEnacted() {
+        for(DistrictingPlan plan: this.districtingPlans) {
+            plan.calDevFromEnacted(this.enacted);
+        }
+    }
+
+    public void calDevFromAverage() {
+        Collections.sort(this.districtingPlans, Comparator.comparingDouble(o -> o.popEqual));
+        this.average = this.districtingPlans.get(this.districtingPlans.size() / 2).districts;
+        for(DistrictingPlan plan: this.districtingPlans) {
+            plan.calDevFromAverage(this.enacted);
         }
     }
 
     public String getBoxandWhiskerPlot(String minority) {
-        int districtNum = districtPlans.get(0).districts.size();
+        int districtNum = districtingPlans.get(0).districts.size();
         ArrayList<ArrayList<Integer>> plotData = new ArrayList<>();
         HashMap<Integer, ArrayList<Integer>> plot = new HashMap<>();
         for(int i = 0; i < districtNum; i++) {
             plotData.add(new ArrayList<>());
         }
         int cur;
-        for(DistrictPlan plan: districtPlans) {
+        for(DistrictingPlan plan: districtingPlans) {
             cur = 0;
             for(District district: plan.districts) {
                 int pop = 0;
@@ -112,7 +133,7 @@ public class Job {
         for(ArrayList<Integer> id: plotData) {
             int min = Collections.min(id);
             int max = Collections.max(id);
-            int q1 = districtPlans.size() / 4;
+            int q1 = districtingPlans.size() / 4;
             int q2 = q1 * 2;
             int q3 = q1 * 3;
             Collections.sort(id);
