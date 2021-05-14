@@ -3,6 +3,8 @@ package com.sbu.redistrictingserver.model;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.sbu.redistrictingserver.controller.JobController;
+import com.sbu.redistrictingserver.geotools.GeoFile;
+import com.sbu.redistrictingserver.geotools.GeoProcessing;
 
 import javax.persistence.*;
 import java.lang.reflect.Array;
@@ -82,6 +84,34 @@ public class Job {
         for(int i = 0; i < 10; i++) {
             top10.add(this.districtingPlans.get(i));
         }
+        // top1
+        // DistrictingPlan top1 = JobController.districtPlans.get("MD").get(10000);
+        DistrictingPlan top1 = top10.get(0);
+        HashMap<Long, Long> precinctDistrictMap = new HashMap<>();
+        for(District district: top1.districts) {
+            for(Integer precinct: district.precincts) {
+                precinctDistrictMap.put((long) precinct, (long) district.districtNum);
+            }
+        }
+        // create a geojson file
+        GeoFile geoFile = new GeoFile();
+        // load geojson, wrong path
+        // src/main/resources/Districts/" + state + "/" + state + "_plans.json
+        geoFile.loadFile("md_refined_513.json");
+        long start = System.currentTimeMillis();
+        // create a processing toolkit
+        GeoProcessing processing = new GeoProcessing();
+        // process geojson file by precinct->district map
+        GeoFile newFile = processing.processFile(geoFile, precinctDistrictMap);
+        // newFile.toString();
+        // new Gson().toJson(newFile, GeoFile);
+        long stop = System.currentTimeMillis();
+        System.out.println(stop-start);
+        // write to geojson result
+        // src/main/resources/Districts/" + state + "/" + state + "_plans.json
+        newFile.writeFile("out1000.json");
+        long stop2 = System.currentTimeMillis();
+        System.out.println(stop2-stop);
         return top10;
     }
 
