@@ -2,6 +2,7 @@ package com.sbu.redistrictingserver;
 
 
 import com.sbu.redistrictingserver.controller.JobController;
+import com.sbu.redistrictingserver.geotools.GeoFile;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -19,6 +20,9 @@ public class RedistrictingServerApplication {
 		for(String state: states) {
 			JobController.loadPlans(state);
 			JobController.loadEnactedPlans(state);
+			GeoFile newFile = new GeoFile();
+			newFile.loadFile(state);
+			JobController.precinctData.put(state, newFile);
 		}
 
 	}

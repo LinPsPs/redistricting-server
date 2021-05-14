@@ -4,6 +4,7 @@ import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
+import com.sbu.redistrictingserver.geotools.GeoFile;
 import com.sbu.redistrictingserver.model.District;
 import com.sbu.redistrictingserver.model.DistrictingPlan;
 import com.sbu.redistrictingserver.model.Job;
@@ -28,6 +29,7 @@ public class JobController {
     private final Gson gson = new Gson();
     public static HashMap<String, ArrayList<DistrictingPlan>> districtPlans = new HashMap<>();
     public static HashMap<String, ArrayList<District>> enacted = new HashMap<>();
+    public static HashMap<String, GeoFile> precinctData = new HashMap<>();
 
     @PostMapping(path="/job")
     public ResponseEntity createJob(@RequestBody String jobJson) throws IOException {

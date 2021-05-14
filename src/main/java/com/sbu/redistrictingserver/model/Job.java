@@ -84,9 +84,13 @@ public class Job {
         for(int i = 0; i < 10; i++) {
             top10.add(this.districtingPlans.get(i));
         }
+        return top10;
+    }
+
+    public String getShowDistricting(int index, String state) {
         // top1
         // DistrictingPlan top1 = JobController.districtPlans.get("MD").get(10000);
-        DistrictingPlan top1 = top10.get(0);
+        DistrictingPlan top1 = this.filtered.get(index);
         HashMap<Long, Long> precinctDistrictMap = new HashMap<>();
         for(District district: top1.districts) {
             for(Integer precinct: district.precincts) {
@@ -94,10 +98,11 @@ public class Job {
             }
         }
         // create a geojson file
-        GeoFile geoFile = new GeoFile();
+        // GeoFile geoFile = new GeoFile();
         // load geojson, wrong path
         // src/main/resources/Districts/" + state + "/" + state + "_plans.json
-        geoFile.loadFile("md_refined_513.json");
+        // geoFile.loadFile("md_refined_513.json");
+        GeoFile geoFile = JobController.precinctData.get(state);
         long start = System.currentTimeMillis();
         // create a processing toolkit
         GeoProcessing processing = new GeoProcessing();
@@ -112,7 +117,7 @@ public class Job {
         newFile.writeFile("out1000.json");
         long stop2 = System.currentTimeMillis();
         System.out.println(stop2-stop);
-        return top10;
+        return newFile.toString();
     }
 
     public void calDevFromEnacted() {
