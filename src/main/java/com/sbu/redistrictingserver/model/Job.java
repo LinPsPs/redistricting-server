@@ -214,6 +214,7 @@ public class Job {
     public String getBoxandWhiskerPlot(String minority) {
         int districtNum = districtingPlans.get(0).districts.size();
         ArrayList<ArrayList<Integer>> plotData = new ArrayList<>();
+        // OR TreeMap<Integer, ArrayList<Integer>> plot = new TreeMap<>();
         HashMap<Integer, ArrayList<Integer>> plot = new HashMap<>();
         for(int i = 0; i < districtNum; i++) {
             plotData.add(new ArrayList<>());
@@ -253,6 +254,6 @@ public class Job {
             cur ++;
         }
         System.out.println("Plot is ready, check " + plot.size());
-        return new Gson().toJson(plot);
+        return new Gson().toJson(new TreeMap<>(plot));
     }
 }
