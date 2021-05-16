@@ -1,12 +1,15 @@
 package com.sbu.redistrictingserver.model;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.sbu.redistrictingserver.controller.JobController;
 import com.sbu.redistrictingserver.geotools.GeoFile;
 import com.sbu.redistrictingserver.geotools.GeoProcessing;
 
 import javax.persistence.*;
+import java.io.FileReader;
 import java.lang.reflect.Array;
 import java.util.*;
 
@@ -131,6 +134,71 @@ public class Job {
         this.average = this.districtingPlans.get(this.districtingPlans.size() / 2).districts;
         for(DistrictingPlan plan: this.districtingPlans) {
             plan.calDevFromAverage(this.enacted);
+        }
+    }
+
+    // update filter based on major minority
+    public void calMajorMinority(double percentage, District.MM type, int threshold) {
+        this.filtered = new ArrayList<>();
+        for(DistrictingPlan plan: this.districtingPlans) {
+            int count = 0;
+            for(District district: plan.districts) {
+                switch (type) {
+                    case AVAP:
+                        if(district.AVAP * 1.0 / district.VAP >= percentage) count ++;
+                        break;
+                    case HVAP:
+                        if(district.HVAP * 1.0 / district.HVAP >= percentage) count ++;
+                        break;
+                    case WVAP:
+                        if(district.WVAP * 1.0 / district.WVAP >= percentage) count ++;
+                        break;
+                    case BVAP:
+                        if(district.BVAP * 1.0 / district.BVAP >= percentage) count ++;
+                        break;
+                }
+            }
+            if(count >= threshold) {
+                filtered.add(plan);
+            }
+        }
+    }
+
+    // update filter based on incumbent protection
+//    Virginia: [
+//        {name: ‘Rob Wittman’, precinctID: ‘12’},
+//        {name: ‘Elaine Luria’’, precinctID: ‘132’}
+//    ]
+
+    public void calIncumbentProtection(String protection) {
+        try {
+            JsonObject jobj = new Gson().fromJson(protection, JsonObject.class);
+            JsonArray arr = jobj.getAsJsonObject().getAsJsonArray(state);
+            ArrayList<Integer> protectionList = new ArrayList<>();
+            for(JsonElement element: arr) {
+                protectionList.add(element.getAsJsonObject().get("precinctID").getAsInt());
+            }
+            this.filtered = new ArrayList<>();
+            int count = 0;
+            for(DistrictingPlan plan: this.districtingPlans) {
+                for(District district: plan.districts) {
+                    count = 0;
+                    for(Integer precinctID: protectionList) {
+                        if(district.precincts.contains(precinctID)) {
+                            count += 1;
+                        }
+                    }
+                    if(count >= 2) {
+                        break;
+                    }
+                }
+                if(count < 2) {
+                    this.filtered.add(plan);
+                }
+            }
+        }
+        catch(Exception e) {
+            System.out.println("Error " + e);
         }
     }
 

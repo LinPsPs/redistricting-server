@@ -30,25 +30,6 @@ public class District {
         this.BVAP = BVAP;
         this.AVAP = AVAP;
         this.precincts = precincts;
-        this.calConstraint();
-    }
-
-    public void calConstraint() {
-        // majority minority
-        this.mm = MM.HVAP;
-        this.MMVAP = this.HVAP;
-        if(this.WVAP > this.MMVAP) {
-            this.mm = MM.WVAP;
-            this.MMVAP = this.WVAP;
-        }
-        if(this.BVAP > this.MMVAP) {
-            this.mm = MM.BVAP;
-            this.MMVAP = this.BVAP;
-        }
-        if(this.AVAP > this.MMVAP) {
-            this.mm = MM.AVAP;
-            this.MMVAP = this.AVAP;
-        }
     }
 
     @Override

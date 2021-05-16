@@ -3,6 +3,7 @@ package com.sbu.redistrictingserver;
 
 import com.sbu.redistrictingserver.controller.JobController;
 import com.sbu.redistrictingserver.geotools.GeoFile;
+import com.sbu.redistrictingserver.model.Job;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
@@ -24,7 +25,6 @@ public class RedistrictingServerApplication {
 			newFile.loadFile(state);
 			JobController.precinctData.put(state, newFile);
 		}
-
 	}
 
 }

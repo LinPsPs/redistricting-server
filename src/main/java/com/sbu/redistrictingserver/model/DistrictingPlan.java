@@ -57,12 +57,7 @@ public class DistrictingPlan {
         int count = 0;
         for(District d: this.districts) {
             if (d.mm == District.MM.BVAP) {
-                if(!this.mm.containsKey(District.MM.BVAP)) {
-                    this.mm.put(District.MM.BVAP, 0);
-                }
-                else {
-                    this.mm.put(District.MM.BVAP, this.mm.get(District.MM.BVAP));
-                }
+                this.mm.put(District.MM.BVAP, this.mm.getOrDefault(District.MM.BVAP, 0));
             }
         }
     }
@@ -87,7 +82,7 @@ public class DistrictingPlan {
     public void calDevFromAverage(ArrayList<District> ave) {
         double diff = 0;
         for(int i = 0; i < ave.size(); i++) {
-            diff += Math.pow(ave.get(i).VAP - districts.get(i).VAP, 2);
+            diff += Math.pow((districts.get(i).VAP - ave.get(i).VAP) * 1.0 / ave.get(i).VAP, 2);
         }
         this.devFromAverage = Math.pow(diff / ave.size(), 0.5);
     }
