@@ -80,7 +80,8 @@ public class JobController {
                     }
                 }
                 enacted_districts.add(new District(cur, districtObject.get("vap").getAsInt(), districtObject.get("hvap").getAsInt(),
-                        districtObject.get("wvap").getAsInt(), districtObject.get("bvap").getAsInt(), districtObject.get("asainvap").getAsInt(), precincts));
+                        districtObject.get("wvap").getAsInt(), districtObject.get("bvap").getAsInt(), districtObject.get("asainvap").getAsInt(),
+                        0, 0, precincts));
                 cur ++;
             }
             System.out.println(enacted_districts.size() + " districts loaded from enacted plan");

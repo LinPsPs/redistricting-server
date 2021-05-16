@@ -73,7 +73,7 @@ public class Job {
                 type = District.MM.AVAP;
             }
             if(plan.popEqual < cons.get("dev").getAsInt() &&
-                    plan.gc < cons.get("gc").getAsDouble() &&
+                    plan.gcSum < cons.get("gc").getAsDouble() &&
                     plan.mm.get(type) < cons.get("MM_Limit").getAsInt()) {
                 this.filtered.add(plan);
             }
@@ -81,13 +81,22 @@ public class Job {
         return this.filtered.size();
     }
 
-    public ArrayList<DistrictingPlan> getTop10() {
+    public ArrayList<DistrictingPlan> getTop10ByObjectiveFxn() {
         ArrayList<DistrictingPlan> top10 = new ArrayList<>();
         Collections.sort(this.districtingPlans, Comparator.comparingDouble(o -> o.objectiveFxnScore));
         for(int i = 0; i < 10; i++) {
             top10.add(this.districtingPlans.get(i));
         }
         return top10;
+    }
+
+    public ArrayList<DistrictingPlan> getTop5DifferentArea() {
+        ArrayList<DistrictingPlan> top5 = new ArrayList<>();
+        Collections.sort(this.districtingPlans, Comparator.comparingDouble(o -> o.areaDeviationSum));
+        for(int i = 0; i < 5; i++) {
+            top5.add(this.districtingPlans.get(i));
+        }
+        return top5;
     }
 
     public String getShowDistricting(int index, String state) {

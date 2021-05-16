@@ -22,16 +22,14 @@ public class DistrictingPlan {
     public double popEqual;
     public double devFromAverage;
     public double devFromEnacted;
-    public double areaDeviation;
-    public double gc;
+    public double areaDeviationSum;
+    public double gcSum;
     public double objectiveFxnScore;
 
     public DistrictingPlan(JsonElement districtsJson) {
         this.districts = new ArrayList<>();
         this.mm = new HashMap<>();
         ArrayList<Integer> vap = new ArrayList<>();
-        this.areaDeviation = districtsJson.getAsJsonObject().get("areadevs").getAsDouble();
-        this.gc = districtsJson.getAsJsonObject().get("gc").getAsDouble();
         JsonArray districtArray = districtsJson.getAsJsonObject().getAsJsonArray("districts");
         for(JsonElement district: districtArray) {
             JsonObject districtObject = district.getAsJsonObject();
@@ -43,8 +41,11 @@ public class DistrictingPlan {
                 }
             }
             districts.add(new District(districtObject.get("renumber").getAsInt(), districtObject.get("vap").getAsInt(), districtObject.get("hvap").getAsInt(),
-                    districtObject.get("wvap").getAsInt(), districtObject.get("bvap").getAsInt(), districtObject.get("asianvap").getAsInt(), precincts));
+                    districtObject.get("wvap").getAsInt(), districtObject.get("bvap").getAsInt(), districtObject.get("asianvap").getAsInt(),
+                    districtObject.get("aredev").getAsDouble(), districtObject.get("gc").getAsDouble(), precincts));
             vap.add(districtObject.get("vap").getAsInt());
+            this.areaDeviationSum +=  districtObject.get("aredev").getAsDouble();
+            this.gcSum += districtObject.get("gc").getAsDouble();
         }
         for(int pop: vap) {
             this.totalVap += pop;
@@ -95,6 +96,6 @@ public class DistrictingPlan {
         double devFromAveW = weight.getAsJsonObject().get("devFromAve").getAsDouble();
         double devFromEnactedW = weight.getAsJsonObject().get("devFromEnacted").getAsDouble();
         double gcW = weight.getAsJsonObject().get("gc").getAsDouble();
-        this.objectiveFxnScore = popEqW * this.popEqual + devFromEnactedW * this.devFromEnacted + devFromAveW * this.devFromAverage + gcW * this.gc;
+        this.objectiveFxnScore = popEqW * this.popEqual + devFromEnactedW * this.devFromEnacted + devFromAveW * this.devFromAverage + gcW * this.gcSum;
     }
 }

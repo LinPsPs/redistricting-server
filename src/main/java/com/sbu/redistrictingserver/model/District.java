@@ -21,14 +21,18 @@ public class District {
     public MM mm;
     public int MMVAP;
     public ArrayList<Integer> precincts;
+    public double areadev;
+    public double gc;
 
-    public District(int districtNum, int VAP, int HVAP, int WVAP, int BVAP, int AVAP, ArrayList<Integer> precincts) {
+    public District(int districtNum, int VAP, int HVAP, int WVAP, int BVAP, int AVAP, double areadev, double gc, ArrayList<Integer> precincts) {
         this.districtNum = districtNum;
         this.VAP = VAP;
         this.HVAP = HVAP;
         this.WVAP = WVAP;
         this.BVAP = BVAP;
         this.AVAP = AVAP;
+        this.areadev = areadev;
+        this.gc = gc;
         this.precincts = precincts;
     }
 
