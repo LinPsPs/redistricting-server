@@ -28,7 +28,7 @@ public class Job {
     private String districtPlanPath;
 
     @Transient
-    private final ArrayList<DistrictingPlan> districtingPlans;
+    private ArrayList<DistrictingPlan> districtingPlans;
 
     @Transient
     private final ArrayList<District> enacted;
@@ -62,8 +62,8 @@ public class Job {
     }
 
     public int filtered(JsonObject cons) {
-        this.filtered = new ArrayList<>();
-        for(DistrictingPlan plan : this.districtingPlans) {
+        this.districtingPlans = new ArrayList<>();
+        for(DistrictingPlan plan : JobController.districtPlans.get(state)) {
             // get Majority minority type
             District.MM type;
             if(cons.get("MM_Type").getAsString().equals("BVAP")) {
@@ -75,10 +75,10 @@ public class Job {
             if(plan.popEqual < cons.get("dev").getAsInt() &&
                     plan.gcSum < cons.get("gc").getAsDouble() &&
                     plan.mm.get(type) < cons.get("MM_Limit").getAsInt()) {
-                this.filtered.add(plan);
+                this.districtingPlans.add(plan);
             }
         }
-        return this.filtered.size();
+        return this.districtingPlans.size();
     }
 
     public ArrayList<DistrictingPlan> getTop10ByObjectiveFxn() {
